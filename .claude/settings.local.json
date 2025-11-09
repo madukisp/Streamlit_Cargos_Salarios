@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"C:\\Scripts\\Oris\\02_paineis_streamlit\")",
+      "Bash(findstr:*)",
+      "Bash(python run_migration.py:*)",
+      "Bash(python check_and_migrate.py:*)",
+      "Bash(python config.py:*)",
+      "Bash(dir dataoris.db 2)",
+      "Bash(nul)",
+      "Bash(dir ..dataoris.db 2)",
+      "Bash(dir /s /b C:ScriptsOris*.db 2)",
+      "Bash(python:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

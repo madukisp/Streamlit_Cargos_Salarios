@@ -1,0 +1,184 @@
+// Database Schema - Sistema ORIS
+// Gerado em: 2025-11-09
+// Ferramenta: dbdiagram.io
+
+Project ORIS {
+  database_type: 'SQLite'
+  Note: 'Sistema de Gestão de Quadro de Funcionários e Aprovação de Vagas'
+}
+
+// ==================== TABELA PRINCIPAL DE VAGAS ====================
+Table vagas {
+  id INTEGER [pk, increment, note: 'ID único da vaga']
+
+  // Dados do Funcionário
+  nome TEXT [not null, note: 'Nome completo do funcionário']
+  centro_custo TEXT [not null, note: 'Centro de custo/unidade']
+  cargo TEXT [not null, note: 'Cargo do funcionário']
+  situacao TEXT [not null, note: 'Situação do funcionário (ex: 01-ATIVO, 99-Demitido)']
+  nome_fantasia TEXT [not null, note: 'Nome fantasia do contrato']
+  carga_horaria_semanal REAL [note: 'Carga horária semanal (ex: 40, 36)']
+
+  // Datas do Evento
+  dt_inicio_situacao DATE [note: 'Data de início da situação (para afastamentos)']
+  dt_rescisao DATE [note: 'Data de rescisão (para demissões)']
+  data_evento DATE [note: 'Data unificada do evento']
+
+  // Tipo de Vaga
+  tipo_vaga TEXT [not null, note: 'Tipo: demissao ou afastamento']
+  motivo_vaga TEXT [note: 'Descrição detalhada do motivo']
+  dias_afastamento INTEGER [note: 'Dias de afastamento (somente para afastamentos)']
+
+  // Status da Aprovação
+  status TEXT [not null, default: 'pendente', note: 'Status: pendente, aprovado, rejeitado, cancelado']
+  data_decisao DATETIME [note: 'Data/hora da decisão de aprovação/rejeição']
+  usuario_aprovador TEXT [note: 'Usuário que aprovou/rejeitou']
+  observacao TEXT [note: 'Observações sobre a decisão']
+
+  // Dados da TLP (análise no momento da aprovação)
+  quantidade_ideal INTEGER [note: 'Quantidade ideal segundo a TLP']
+  quantidade_atual INTEGER [note: 'Quantidade atual de funcionários']
+  deficit INTEGER [note: 'Déficit calculado (ideal - atual)']
+  vaga_prevista_tlp INTEGER [note: 'Vaga prevista na TLP? (0/1)']
+
+  // Controle de Timestamps
+  data_criacao DATETIME [default: `CURRENT_TIMESTAMP`, note: 'Data de criação do registro']
+  data_atualizacao DATETIME [default: `CURRENT_TIMESTAMP`, note: 'Data da última atualização']
+
+  Indexes {
+    status [name: 'idx_vagas_status']
+    tipo_vaga [name: 'idx_vagas_tipo']
+    centro_custo [name: 'idx_vagas_centro_custo']
+    cargo [name: 'idx_vagas_cargo']
+    data_evento [name: 'idx_vagas_data_evento']
+    data_decisao [name: 'idx_vagas_data_decisao']
+  }
+
+  Note: 'Tabela principal de vagas para aprovação'
+}
+
+// ==================== TABELA TLP ====================
+Table tlp {
+  contrato TEXT [note: 'Nome do contrato']
+  unidade TEXT [note: 'Unidade/centro de custo']
+  cargo TEXT [note: 'Cargo']
+  carga_hora REAL [note: 'Carga horária semanal']
+  quantidade_ideal INTEGER [note: 'Quantidade ideal de funcionários']
+
+  Note: 'Tabela de Lotação de Pessoal - define o quadro ideal'
+}
+
+// ==================== TABELA RELATÓRIO ORIS ====================
+Table relatorio_oris {
+  "Nome" TEXT [note: 'Nome do funcionário']
+  "Cargo" TEXT [note: 'Cargo do funcionário']
+  "Centro custo" TEXT [note: 'Centro de custo']
+  "Nome Fantasia" TEXT [note: 'Nome fantasia do contrato']
+  "Situação" TEXT [note: 'Situação atual (01-ATIVO, 99-Demitido, etc)']
+  "Carga Horária Semanal" REAL [note: 'Carga horária semanal']
+  "Dt Rescisão" DATE [note: 'Data de rescisão (se demitido)']
+  "Dt Início Situação" DATE [note: 'Data de início da situação atual']
+
+  Note: 'Relatório de funcionários do sistema ORIS (importado de CSV/Excel)'
+}
+
+// ==================== VIEWS ====================
+Table vagas_pendentes {
+  id INTEGER [ref: > vagas.id]
+  nome TEXT
+  cargo TEXT
+  centro_custo TEXT
+  tipo_vaga TEXT
+  motivo_vaga TEXT
+  data_evento DATE
+  dias_afastamento INTEGER
+  deficit INTEGER
+  vaga_prevista_tlp INTEGER
+
+  Note: 'View: Vagas com status pendente'
+}
+
+Table vagas_aprovadas {
+  id INTEGER [ref: > vagas.id]
+  nome TEXT
+  cargo TEXT
+  centro_custo TEXT
+  tipo_vaga TEXT
+  data_evento DATE
+  data_decisao DATETIME
+  usuario_aprovador TEXT
+  deficit INTEGER
+
+  Note: 'View: Vagas com status aprovado'
+}
+
+Table vagas_canceladas {
+  id INTEGER [ref: > vagas.id]
+  nome TEXT
+  cargo TEXT
+  centro_custo TEXT
+  tipo_vaga TEXT
+  data_evento DATE
+  data_decisao DATETIME
+  usuario_aprovador TEXT
+  observacao TEXT
+  deficit INTEGER
+
+  Note: 'View: Vagas com status cancelado'
+}
+
+// ==================== ENUMS ====================
+Enum tipo_vaga_enum {
+  demissao [note: 'Vaga por demissão']
+  afastamento [note: 'Vaga por afastamento']
+}
+
+Enum status_vaga_enum {
+  pendente [note: 'Aguardando aprovação']
+  aprovado [note: 'Vaga aprovada']
+  rejeitado [note: 'Vaga rejeitada na triagem inicial']
+  cancelado [note: 'Vaga aprovada mas posteriormente cancelada']
+}
+
+// ==================== RELACIONAMENTOS LÓGICOS ====================
+// Nota: SQLite não tem foreign keys enforcement por padrão,
+// mas estes são os relacionamentos lógicos do sistema
+
+// Ref: vagas.nome > relatorio_oris."Nome"
+// Ref: vagas.cargo > relatorio_oris."Cargo"
+// Ref: vagas.centro_custo > relatorio_oris."Centro custo"
+
+// Ref: tlp.cargo > vagas.cargo
+// Ref: tlp.unidade > vagas.centro_custo
+
+// ==================== DOCUMENTAÇÃO ADICIONAL ====================
+
+TableGroup "Sistema de Vagas" {
+  vagas
+  vagas_pendentes
+  vagas_aprovadas
+  vagas_canceladas
+}
+
+TableGroup "Dados Base" {
+  tlp
+  relatorio_oris
+}
+
+// ==================== TRIGGERS ====================
+// Trigger: update_vagas_timestamp
+// Descrição: Atualiza data_atualizacao automaticamente após UPDATE
+// AFTER UPDATE ON vagas
+// BEGIN
+//     UPDATE vagas SET data_atualizacao = CURRENT_TIMESTAMP WHERE id = NEW.id;
+// END
+
+// ==================== CONSTRAINTS ====================
+// CHECK (tipo_vaga IN ('demissao', 'afastamento'))
+// CHECK (status IN ('pendente', 'aprovado', 'rejeitado', 'cancelado'))
+
+// ==================== FLUXO DE STATUS ====================
+// pendente → aprovado (via aprovar_vaga ou aprovar_e_salvar_vaga)
+// pendente → rejeitado (via rejeitar_vaga)
+// aprovado → cancelado (via cancelar_vaga_aprovada)
+// aprovado/rejeitado/cancelado → pendente (via desfazer_decisao)
