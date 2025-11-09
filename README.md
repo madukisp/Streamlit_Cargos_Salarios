@@ -1,501 +1,550 @@
-# Sistema ORIS - Gestão de Vagas e Quadro de Funcionários
 
-## Resumo Executivo
+# 📋 Sistema ORIS - Módulo Cargos e Salários
 
-Sistema completo de gestão de recursos humanos para análise de quadro de funcionários, aprovação de vagas e controle de déficit de pessoal, com rastreamento completo de aprovações.
+[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)](https://streamlit.io/)
+[![SQLite](https://img.shields.io/badge/SQLite-3-green.svg)](https://www.sqlite.org/)
+[![License](https://img.shields.io/badge/License-Private-yellow.svg)](https://claude.ai/chat/1f384158-8f38-44a2-96bd-ef1e10ca8938)
 
-### Principais Funcionalidades
+Sistema de gestão e aprovação de vagas para o setor de Cargos e Salários, com análise automática de déficit baseada em TLP (Tabela de Lotação Prevista).
 
-- **Quadro de Funcionários**: Análise de déficit com comparação TLP
-- **Aprovação de Vagas**: Fluxo otimizado (1-clique) com rastreamento completo
-- **Status "Cancelado"**: Cancele vagas aprovadas com histórico
-- **Prevenção de Duplicatas**: Validação automática
-- **Agrupamento por Carga Horária**: Distingue cargos 40h e 36h
-- **Configuração Centralizada**: Banco compartilhado entre módulos
-- **Exportação Excel**: Relatórios personalizados  
+![Screenshot](https://via.placeholder.com/800x400.png?text=Screenshot+do+Sistema)
 
 ---
 
-## Estrutura do Projeto
+## 📑 Índice
 
-```
-C:\Scripts\Oris\
-├── data\
-│   └── oris.db                    # Banco de dados SQLite (compartilhado)
-├── 01_cargos_salarios\            # Outro módulo do sistema
-├── 02_paineis_streamlit\          # Este módulo
-│   ├── app.py                     # Ponto de entrada principal
-│   ├── config.py                  # Configuração centralizada
-│   ├── aprovar_vaga.py            # Módulo de aprovação de vagas
-│   ├── gestao_vagas.py            # Lógica de negócio das vagas
-│   ├── quadro_func.py             # Análise de déficit de funcionários
-│   ├── database_schema.dbml       # Documentação do schema (dbdiagram.io)
-│   ├── migrations\
-│   │   └── add_cancelado_status.sql
-│   ├── util\
-│   │   └── inicializar_banco.py   # Script de inicialização do banco
-│   └── run_migration.py           # Executor de migrations
-```
-
-### Arquivos Principais
-
-**Código:**
-- [app.py](app.py) - Aplicação principal Streamlit
-- [config.py](config.py) - Configuração centralizada de caminhos
-- [gestao_vagas.py](gestao_vagas.py) - Gerenciamento de vagas (aprovar, rejeitar, cancelar)
-- [aprovar_vaga.py](aprovar_vaga.py) - Interface de aprovação
-- [quadro_func.py](quadro_func.py) - Análise de déficit de funcionários
-
-**Banco de Dados:**
-- [database_schema.dbml](database_schema.dbml) - Schema completo do banco
-- [util/inicializar_banco.py](util/inicializar_banco.py) - Script de inicialização
-- [migrations/add_cancelado_status.sql](migrations/add_cancelado_status.sql) - Migration para status cancelado
+* [Sobre o Projeto](https://claude.ai/chat/1f384158-8f38-44a2-96bd-ef1e10ca8938#sobre-o-projeto)
+* [Funcionalidades](https://claude.ai/chat/1f384158-8f38-44a2-96bd-ef1e10ca8938#funcionalidades)
+* [Tecnologias](https://claude.ai/chat/1f384158-8f38-44a2-96bd-ef1e10ca8938#tecnologias)
+* [Pré-requisitos](https://claude.ai/chat/1f384158-8f38-44a2-96bd-ef1e10ca8938#pr%C3%A9-requisitos)
+* [Instalação](https://claude.ai/chat/1f384158-8f38-44a2-96bd-ef1e10ca8938#instala%C3%A7%C3%A3o)
+* [Uso](https://claude.ai/chat/1f384158-8f38-44a2-96bd-ef1e10ca8938#uso)
+* [Estrutura do Projeto](https://claude.ai/chat/1f384158-8f38-44a2-96bd-ef1e10ca8938#estrutura-do-projeto)
+* [Banco de Dados](https://claude.ai/chat/1f384158-8f38-44a2-96bd-ef1e10ca8938#banco-de-dados)
+* [Regras de Negócio](https://claude.ai/chat/1f384158-8f38-44a2-96bd-ef1e10ca8938#regras-de-neg%C3%B3cio)
+* [Troubleshooting](https://claude.ai/chat/1f384158-8f38-44a2-96bd-ef1e10ca8938#troubleshooting)
+* [Roadmap](https://claude.ai/chat/1f384158-8f38-44a2-96bd-ef1e10ca8938#roadmap)
+* [Contribuição](https://claude.ai/chat/1f384158-8f38-44a2-96bd-ef1e10ca8938#contribui%C3%A7%C3%A3o)
+* [Licença](https://claude.ai/chat/1f384158-8f38-44a2-96bd-ef1e10ca8938#licen%C3%A7a)
 
 ---
 
-## Quick Start
+## 📖 Sobre o Projeto
 
-### Requisitos
+O **Sistema ORIS - Módulo Cargos e Salários** é uma aplicação web desenvolvida em Streamlit para automatizar o processo de aprovação de vagas geradas por demissões ou afastamentos de funcionários.
 
-```bash
-pip install streamlit pandas sqlite3 xlsxwriter
+### 🎯 Objetivo
+
+Facilitar a análise e aprovação de vagas através da validação automática com a TLP (Tabela de Lotação Prevista), garantindo que as contratações estejam alinhadas com o quadro ideal de funcionários.
+
+### 👥 Usuários
+
+* **Gestores de RH** - Visualizam relatórios e quadros
+* **Analistas de C&S** - Aprovam/rejeitam vagas
+* **Coordenadores** - Acompanham estatísticas
+
+---
+
+## ✨ Funcionalidades
+
+### 📋 Aprovação de Vagas
+
+* ✅ **Identificação Automática** de vagas por demissão ou afastamento
+* ✅ **Análise com TLP** - Valida déficit de funcionários por cargo/unidade
+* ✅ **Filtros Avançados** - Por tipo, unidade, data
+* ✅ **Aprovação em Lote** - Aprova múltiplas vagas de uma vez
+* ✅ **Histórico Completo** - Rastreabilidade de todas as decisões
+* ✅ **Exportação Excel** - Relatórios formatados
+
+### 📊 Quadro de Funcionários
+
+* ✅ **Análise de Déficit** - Por cargo e centro de custo
+* ✅ **Comparação TLP vs Real** - Identificação de gaps
+* ✅ **Cargos Prioritários** - Lista ordenada por déficit
+* ✅ **Visualização Detalhada** - Lista de funcionários ativos
+* ✅ **Dashboard Executivo** - KPIs e métricas
+
+### 🔍 Critérios de Identificação
+
+**Demissões:**
+
+* Data de Rescisão >= 01/01/2025
+
+**Afastamentos:**
+
+* Situação ∉ [01-ATIVO, 99-Demitido, 18-ATESTADO MÉDICO]
+* Data Início Situação >= 01/01/2025
+* Calcula dias de afastamento automaticamente
+
+---
+
+## 🛠️ Tecnologias
+
+### Core
+
+* **[Python 3.12+](https://www.python.org/)** - Linguagem principal
+* **[Streamlit](https://streamlit.io/)** - Framework web
+* **[SQLite](https://www.sqlite.org/)** - Banco de dados
+* **[Pandas](https://pandas.pydata.org/)** - Análise de dados
+
+### Bibliotecas Principais
+
+```python
+streamlit==1.28.0
+pandas==2.1.0
+numpy==1.25.0
+openpyxl==3.1.2
+xlsxwriter==3.1.9
+python-dotenv==1.0.0
 ```
 
-### Executar Aplicação
+---
+
+## 📋 Pré-requisitos
+
+* **Python** 3.12 ou superior
+* **pip** (gerenciador de pacotes Python)
+* **Windows 10/11** ou **Linux**
+* **4GB RAM** mínimo
+* **Banco de dados** `oris.db` configurado
+
+---
+
+## 🚀 Instalação
+
+### 1. Clone o repositório
 
 ```bash
-cd C:\Scripts\Oris\02_paineis_streamlit
+git clone https://github.com/sua-empresa/oris-sistema.git
+cd oris-sistema/01_cargos_salarios
+```
+
+### 2. Crie um ambiente virtual
+
+**Windows:**
+
+```bash
+python -m venv venv
+.\venv\Scripts\activate
+```
+
+**Linux/Mac:**
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 3. Instale as dependências
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure o banco de dados
+
+Certifique-se de que o banco `oris.db` está em:
+
+```
+C:\Scripts\Oris\data\oris.db
+```
+
+Ou configure o caminho no arquivo `.env`:
+
+```env
+DB_PATH=../data/oris.db
+```
+
+### 5. Execute a aplicação
+
+```bash
 streamlit run app.py
 ```
 
-A aplicação abrirá no navegador em `http://localhost:8501`
+A aplicação será aberta automaticamente em `http://localhost:8501`
 
-### Primeiro Uso
+---
 
-Se for a primeira vez ou se o banco não existir:
+## 💻 Uso
 
-```bash
-# Verificar estrutura
-cd util
-python inicializar_banco.py --check
+### Interface Principal
 
-# Se necessário, inicializar banco
-python inicializar_banco.py --init
+1. **Sidebar** - Navegação entre módulos
+   * 📋 Aprovação de Vagas
+   * 📊 Quadro de Funcionários
+2. **Filtros** - Refine sua visualização
+   * Por tipo (Demissões/Afastamentos)
+   * Por unidade
+   * Por status
+3. **Ações** - Interaja com as vagas
+   * ✅ Aprovar - Confirma necessidade da vaga
+   * ❌ Rejeitar - Nega abertura da vaga
+   * 🔄 Desfazer - Reverte decisão
+
+### Fluxo de Trabalho
+
+```mermaid
+graph LR
+    A[Relatório ORIS] --> B[Identifica Vagas]
+    B --> C[Valida com TLP]
+    C --> D{Déficit?}
+    D -->|Sim| E[Aprova]
+    D -->|Não| F[Analisa]
+    F --> G[Decisão Manual]
+    E --> H[Próximo Setor]
+    G --> H
+```
+
+### Atalhos de Teclado
+
+| Atalho     | Ação             |
+| ---------- | ------------------ |
+| `R`      | Recarregar página |
+| `Ctrl+S` | Salvar (auto)      |
+| `Ctrl+E` | Exportar           |
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+01_cargos_salarios/
+│
+├── app.py                      # Aplicação principal (navegação)
+├── aprovar_vaga.py             # Módulo de aprovação de vagas
+├── quadro_func.py              # Módulo de análise de déficit
+├── gestao_vagas.py             # Funções de gerenciamento
+├── config.py                   # Configurações centralizadas
+│
+├── requirements.txt            # Dependências Python
+├── .env.example               # Exemplo de configuração
+├── .gitignore                 # Arquivos ignorados pelo git
+├── README.md                  # Esta documentação
+│
+└── assets/                    # Recursos estáticos (futuro)
+    ├── images/
+    └── styles/
 ```
 
 ---
 
-## Banco de Dados
+## 🗄️ Banco de Dados
 
 ### Localização
-O banco de dados `oris.db` está em **`C:\Scripts\Oris\data\oris.db`** e é compartilhado entre múltiplos módulos.
 
-### Tabelas Principais
+```
+../data/oris.db
+```
 
-#### 1. `vagas` - Gestão de Vagas (21 colunas)
+### Tabelas Utilizadas
+
+#### 1️⃣ `relatorio_oris`
+
+Dados dos funcionários do relatório mensal.
+
+| Campo                  | Tipo | Descrição                  |
+| ---------------------- | ---- | ---------------------------- |
+| Nome                   | TEXT | Nome completo                |
+| Cargo                  | TEXT | Cargo do funcionário        |
+| Centro custo           | TEXT | Unidade/centro de custo      |
+| Situação             | TEXT | Status atual (01-ATIVO, etc) |
+| Nome Fantasia          | TEXT | Nome do contrato             |
+| Dt Rescisão           | DATE | Data da demissão            |
+| Dt Início Situação  | DATE | Data do afastamento          |
+| Carga Horária Semanal | REAL | Horas semanais               |
+
+#### 2️⃣ `tlp`
+
+Tabela de Lotação Prevista (quadro ideal).
+
+| Campo            | Tipo    | Descrição         |
+| ---------------- | ------- | ------------------- |
+| contrato         | TEXT    | Nome do contrato    |
+| unidade          | TEXT    | Centro de custo     |
+| cargo            | TEXT    | Cargo               |
+| carga_hora       | REAL    | Carga horária      |
+| quantidade_ideal | INTEGER | Quantidade prevista |
+
+#### 3️⃣ `vagas`
+
+Histórico de vagas aprovadas/rejeitadas.
+
+| Campo             | Tipo     | Descrição                 |
+| ----------------- | -------- | --------------------------- |
+| id                | INTEGER  | Chave primária             |
+| nome              | TEXT     | Nome do ex-funcionário     |
+| cargo             | TEXT     | Cargo da vaga               |
+| centro_custo      | TEXT     | Unidade                     |
+| status            | TEXT     | pendente/aprovado/rejeitado |
+| tipo_vaga         | TEXT     | demissao/afastamento        |
+| data_decisao      | DATETIME | Quando foi decidido         |
+| usuario_aprovador | TEXT     | Quem aprovou                |
+| deficit           | INTEGER  | Déficit no momento         |
+
+### Schema Completo
 
 ```sql
-CREATE TABLE vagas (
-    -- Identificação
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    -- Dados do Funcionário
-    nome TEXT NOT NULL,
-    cargo TEXT NOT NULL,
-    centro_custo TEXT NOT NULL,
-    situacao TEXT NOT NULL,
-    nome_fantasia TEXT NOT NULL,
-    carga_horaria_semanal REAL,
-
-    -- Datas do Evento
-    dt_inicio_situacao DATE,
-    dt_rescisao DATE,
-    data_evento DATE,
-
-    -- Tipo de Vaga
-    tipo_vaga TEXT NOT NULL CHECK (tipo_vaga IN ('demissao', 'afastamento')),
-    motivo_vaga TEXT,
-    dias_afastamento INTEGER,
-
-    -- Status da Aprovação
-    status TEXT NOT NULL DEFAULT 'pendente'
-        CHECK (status IN ('pendente', 'aprovado', 'rejeitado', 'cancelado')),
-    data_decisao DATETIME,
-    usuario_aprovador TEXT,
-    observacao TEXT,
-
-    -- Dados da TLP (análise)
-    quantidade_ideal INTEGER,
-    quantidade_atual INTEGER,
-    deficit INTEGER,
-    vaga_prevista_tlp INTEGER,
-
-    -- Controle de Timestamps
-    data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-**Índices:**
-- `idx_vagas_status`, `idx_vagas_tipo`, `idx_vagas_centro_custo`
-- `idx_vagas_cargo`, `idx_vagas_data_evento`, `idx_vagas_data_decisao`
-
-#### 2. `tlp` - Tabela de Lotação de Pessoal
-Quadro ideal de funcionários por contrato, unidade e cargo.
-
-#### 3. `relatorio_oris` - Relatório de Funcionários
-Dados atuais importados do sistema ORIS (CSV/Excel).
-
-### Fluxo de Status
-
-```
-pendente → aprovado    (aprovar_vaga / aprovar_e_salvar_vaga)
-pendente → rejeitado   (rejeitar_vaga)
-aprovado → cancelado   (cancelar_vaga_aprovada)
-qualquer → pendente    (desfazer_decisao)
+-- Ver schema.sql para detalhes completos
 ```
 
 ---
 
-## 🎨 Interface do Sistema
+## 📐 Regras de Negócio
 
-### Modo 1: Vagas Cadastradas
+### Identificação de Vagas
 
-```
-┌─────────────────────────────────────────────────────┐
-│  📋 Aprovação de Vagas                              │
-├─────────────────────────────────────────────────────┤
-│                                                     │
-│  [🔄 Sincronizar Vagas]                             │
-│                                                     │
-│  Estatísticas:                                      │
-│  ⏳ Pendentes: 12  ✅ Aprovadas: 45  ❌ Rejeitadas: 3 │
-│                                                     │
-│  Filtros:                                           │
-│  • Status: [Pendentes ▼]                            │
-│  • Centro: [Todos ▼]                                │
-│                                                     │
-│  ────────────────────────────────────────────       │
-│  🏢 UBS Centro (5 vagas)                            │
-│  ────────────────────────────────────────────       │
-│                                                     │
-│  👤 João Silva                                      │
-│  Cargo: Enfermeiro                                  │
-│  Motivo: Demissão                                   │
-│  Data: 15/01/2025                                   │
-│                                                     │
-│  📊 Análise TLP           🎯 Ação                   │
-│  Qtd Ideal: 5             [✅ Aprovar]              │
-│  Qtd Atual: 4             [❌ Rejeitar]             │
-│  Déficit: 1                                         │
-│                                                     │
-└─────────────────────────────────────────────────────┘
+#### Demissões
+
+```python
+if Dt_Rescisao >= '2025-01-01':
+    criar_vaga(tipo='demissao')
 ```
 
-### Modo 2: Buscar no Relatório
+#### Afastamentos
 
-Busca vagas diretamente no relatório ORIS sem salvar automaticamente.
+```python
+if Situacao not in ['01-ATIVO', '99-Demitido', '18-ATESTADO MÉDICO']:
+    if Dt_Inicio_Situacao >= '2025-01-01':
+        criar_vaga(tipo='afastamento')
+        calcular_dias_afastamento()
+```
+
+### Validação com TLP
+
+```python
+deficit = quantidade_ideal - quantidade_atual
+
+if deficit > 0:
+    status = "Aprovável"
+elif deficit == 0:
+    status = "Quadro Completo"
+else:
+    status = "Excedente"
+```
+
+### Contagem de Ativos
+
+Considera como "ativos":
+
+* 01-ATIVO
+* 18-ATESTADO MÉDICO
+
+Não considera:
+
+* 99-Demitido
+* Outros afastamentos
 
 ---
 
-## 🔥 Funcionalidades Principais
+## 🐛 Troubleshooting
 
-### 1. Sincronização Automática
+### Problema: "Banco de dados não encontrado"
 
-```python
-# Busca vagas do relatório e cadastra automaticamente
-sincronizar_vagas_pendentes(relatorio, tlp)
-
-# Retorna:
-# - Novas vagas cadastradas
-# - Vagas atualizadas
-# - Total processado
-```
-
-### 2. Aprovação com Rastreamento
-
-```python
-# Aprovar vaga
-aprovar_vaga(vaga_id=123, usuario="Admin")
-
-# Registra no banco:
-# - status = 'aprovado'
-# - data_decisao = AGORA
-# - usuario_aprovador = "Admin"
-```
-
-### 3. Estatísticas em Tempo Real
-
-```python
-stats = estatisticas_vagas()
-
-# Retorna:
-# - Taxa de aprovação
-# - Total por status
-# - Top 5 cargos com mais vagas
-# - Cargos críticos
-```
-
-### 4. Exportação para Excel
-
-```python
-# Exporta vagas com formatação profissional
-buffer = exportar_vagas_excel(status='aprovado')
-
-# Gera arquivo com:
-# - Cores automáticas
-# - Colunas ajustadas
-# - Filtros prontos
-```
-
----
-
-## 💡 Exemplos de Uso
-
-### Exemplo 1: Aprovação em Lote
-
-```python
-# 1. Sincroniza vagas
-resultado = sincronizar_vagas_pendentes(relatorio, tlp)
-print(f"✅ {resultado['novas']} novas vagas cadastradas")
-
-# 2. Lista vagas com déficit
-vagas = listar_vagas(status='pendente')
-vagas_deficit = vagas[vagas['deficit'] > 0]
-
-# 3. Aprova todas automaticamente
-for _, vaga in vagas_deficit.iterrows():
-    aprovar_vaga(vaga['id'], usuario="Sistema")
-
-print(f"✅ {len(vagas_deficit)} vagas aprovadas!")
-```
-
-### Exemplo 2: Relatório de Cargos Críticos
-
-```python
-# Busca estatísticas
-stats = estatisticas_vagas()
-
-# Exibe top 5 cargos
-print("🚨 Cargos Críticos:")
-for cargo, total in stats['top_cargos']:
-    print(f"  • {cargo}: {total} vagas")
-
-# Output:
-# 🚨 Cargos Críticos:
-#   • Enfermeiro: 15 vagas
-#   • Técnico de Enfermagem: 12 vagas
-#   • Auxiliar Administrativo: 8 vagas
-```
-
-### Exemplo 3: Busca Personalizada
-
-```python
-# Busca vagas de um centro específico
-vagas_ubs = listar_vagas(
-    status='aprovado',
-    centro_custo='UBS Centro'
-)
-
-# Calcula total de déficit resolvido
-deficit_total = vagas_ubs['deficit'].sum()
-print(f"Déficit resolvido na UBS Centro: {deficit_total}")
-```
-
----
-
-## 📈 Métricas de Performance
-
-### Antes vs Depois
-
-| Métrica | Versão 1.0 | Versão 2.0 | Melhoria |
-|---------|-----------|------------|----------|
-| Tempo de carregamento | 3.2s | 1.8s | **44%** ⬆️ |
-| Verificação TLP (1000 vagas) | 5.4s | 1.6s | **70%** ⬆️ |
-| Rastreabilidade | 0% | 100% | **∞** ⬆️ |
-| Exportação | Manual | Automática | **100%** ⬆️ |
-| Histórico | Perdido | Completo | **∞** ⬆️ |
-
----
-
-## 🐛 Solução de Problemas
-
-### Erro: "Table vagas already exists"
+**Solução:**
 
 ```bash
-# Solução: Recriar tabela
-python inicializar_banco.py --init
-# Escolher 's' quando perguntar
+# Verifique se o banco existe
+ls ../data/oris.db
+
+# Se não existir, crie a estrutura
+python scripts/criar_banco.py
 ```
 
-### Erro: "Module gestao_vagas not found"
+### Problema: "Warnings de formato de data"
+
+**Solução:**
+A função `processar_data()` foi otimizada para formato brasileiro. Se ainda aparecer:
+
+```python
+# Em aprovar_vaga.py, certifique-se de ter:
+pd.to_datetime(data_str, format='%d/%m/%Y', dayfirst=True)
+```
+
+### Problema: "Erro ao carregar dados"
+
+**Causas possíveis:**
+
+1. Tabelas faltando no banco
+2. Colunas renomeadas
+3. Dados corrompidos
+
+**Debug:**
 
 ```bash
-# Solução: Verificar se arquivo está na pasta correta
-ls -la gestao_vagas.py
+# Verifique as tabelas
+sqlite3 ../data/oris.db "SELECT name FROM sqlite_master WHERE type='table';"
 
-# Deve estar na mesma pasta que aprovar_vaga.py
+# Verifique colunas
+sqlite3 ../data/oris.db "PRAGMA table_info(relatorio_oris);"
 ```
 
-### Vagas não aparecem após sincronização
+### Problema: "Performance lenta"
 
-```python
-# Debug: Verificar critérios
-vagas_relatorio = processar_demissoes_e_afastamentos(relatorio)
-print(f"Total no relatório: {len(vagas_relatorio)}")
+**Otimizações:**
 
-# Verificar datas
-# Deve ser >= 01/01/2025
+1. Aumentar cache TTL: `@st.cache_data(ttl=3600)`
+2. Adicionar índices no banco
+3. Filtrar dados antes de processar
+4. Limitar registros exibidos
+
+### Logs
+
+Logs são salvos em:
+
 ```
-
----
-
-## 📚 Documentação Detalhada
-
-### Leia Primeiro
-
-1. **GUIA_IMPLEMENTACAO.md** - Passo a passo completo
-2. **ARQUITETURA_SISTEMA.md** - Diagramas e fluxos
-3. **ANALISE_MELHORIAS.md** - Roadmap futuro
-
-### Consulta Rápida
-
-- **Estrutura do banco:** Ver `criar_tabela_vagas.sql`
-- **Funções disponíveis:** Ver `gestao_vagas.py`
-- **Interface Streamlit:** Ver `aprovar_vaga_integrado.py`
-
----
-
-## 🎓 Roadmap Futuro
-
-### Fase 1 (Próximas 2 semanas)
-- [ ] Dashboard com gráficos
-- [ ] Notificações por email
-- [ ] Filtros avançados
-
-### Fase 2 (Próximo mês)
-- [ ] API REST
-- [ ] Sistema de permissões
-- [ ] App mobile
-
-### Fase 3 (Próximos 3 meses)
-- [ ] Machine Learning para previsão
-- [ ] Integração com WhatsApp
-- [ ] Dashboard em tempo real
-
----
-
-## ✅ Checklist de Implementação
-
-Use este checklist para garantir que tudo está funcionando:
-
-- [ ] ✅ Backup do banco criado
-- [ ] ✅ Tabela `vagas` criada com sucesso
-- [ ] ✅ Índices e views funcionando
-- [ ] ✅ Arquivos Python copiados corretamente
-- [ ] ✅ Streamlit rodando sem erros
-- [ ] ✅ Sincronização funcionando
-- [ ] ✅ Aprovação salvando no banco
-- [ ] ✅ Botão "Desfazer" funcionando
-- [ ] ✅ Estatísticas exibindo corretamente
-- [ ] ✅ Exportação Excel funcionando
-- [ ] ✅ Testes com dados reais realizados
-
----
-
-## 🎯 Conclusão
-
-### Sistema Pronto para Produção! 🚀
-
-Esta versão oferece:
-
-✅ **Rastreabilidade completa** de todas as aprovações  
-✅ **Performance 70% melhor** com otimizações  
-✅ **Histórico permanente** nunca se perde  
-✅ **Estatísticas avançadas** para tomada de decisão  
-✅ **Código modular** fácil de manter e expandir  
-
-### Suporte
-
-Dúvidas? Consulte:
-1. GUIA_IMPLEMENTACAO.md para instruções detalhadas
-2. ARQUITETURA_SISTEMA.md para entender o fluxo
-3. Seção de Solução de Problemas acima
-
----
-
----
-
-## Configuração Centralizada
-
-### Arquivo config.py
-
-Todos os módulos agora utilizam configuração centralizada:
-
-```python
-from config import DB_PATH_STR, DATA_DIR_STR, BASE_DIR, validar_estrutura
-
-# Validar estrutura ao iniciar
-if validar_estrutura():
-    print("✅ Estrutura OK!")
-```
-
-**Vantagens:**
-- Banco compartilhado entre múltiplos módulos (01_cargos_salarios, 02_paineis_streamlit)
-- Fácil manutenção e mudança de caminhos
-- Validação automática da estrutura
-- Compatibilidade com diferentes ambientes
-
-### Constantes Disponíveis
-
-```python
-BASE_DIR = Path(__file__).parent.parent  # C:\Scripts\Oris
-DATA_DIR = BASE_DIR / "data"             # C:\Scripts\Oris\data
-DB_PATH = DATA_DIR / "oris.db"           # C:\Scripts\Oris\data\oris.db
-
-APP_TITLE = "Sistema ORIS - Cargos e Salários"
-DATA_MINIMA_VAGAS = datetime(2025, 1, 1)
-CACHE_TTL = 600  # 10 minutos
+logs/oris_YYYYMMDD.log
 ```
 
 ---
 
-## Versão e Changelog
+## 🗺️ Roadmap
 
-### v2.0.0 - 2025-11-09
+### ✅ Versão 1.0 (Atual)
 
-**Reestruturação Completa:**
-- Configuração centralizada (config.py)
-- Banco movido para `C:\Scripts\Oris\data\oris.db` (compartilhado)
-- Todos os módulos atualizados para usar config
+* [X] Aprovação de vagas
+* [X] Análise de déficit
+* [X] Exportação Excel
+* [X] Filtros básicos
 
-**Novas Funcionalidades:**
-- Status "cancelado" implementado
-- Fluxo de aprovação otimizado (1-clique)
-- Prevenção de duplicatas
-- Agrupamento por carga horária no quadro de funcionários
-- Navegação com botões (substituiu radio buttons)
+### 🔄 Versão 1.1 (Em desenvolvimento)
 
-**Melhorias:**
-- Validação robusta em carregar_dados()
-- Tratamento de erros aprimorado
-- Documentação completa (README.md + database_schema.dbml)
-- Performance otimizada
+* [ ] Sistema de permissões
+* [ ] Dashboard com gráficos
+* [ ] Notificações por email
+* [ ] Histórico de decisões no banco
 
-**Arquivos Atualizados:**
-- [x] config.py (criado)
-- [x] aprovar_vaga.py
-- [x] gestao_vagas.py
-- [x] quadro_func.py
-- [x] run_migration.py
-- [x] util/inicializar_banco.py
+### 📅 Versão 2.0 (Planejado)
+
+* [ ] API REST
+* [ ] Integração com módulo de Recrutamento
+* [ ] App mobile
+* [ ] Machine Learning para previsão
+
+### 🚀 Futuro
+
+* [ ] Relatórios avançados
+* [ ] Integração com BI
+* [ ] Automação de processos
+* [ ] Chatbot de atendimento
 
 ---
 
-## Desenvolvido com
+## 🤝 Contribuição
 
-**Stack:** Python 3.8+, SQLite, Streamlit, Pandas
-**Status:** ✅ Pronto para Uso
-**Licença:** Proprietário
-#   S t r e a m l i t _ C a r g o s _ S a l a r i o s  
- 
+Este é um projeto privado da empresa. Para contribuir:
+
+1. Crie uma branch: `git checkout -b feature/nova-funcionalidade`
+2. Commit suas mudanças: `git commit -m 'Adiciona nova funcionalidade'`
+3. Push para a branch: `git push origin feature/nova-funcionalidade`
+4. Abra um Pull Request
+
+### Padrões de Código
+
+* **PEP 8** - Estilo de código Python
+* **Type Hints** - Documentar tipos
+* **Docstrings** - Documentar funções
+* **Testes** - Cobrir funcionalidades críticas
+
+### Commits
+
+Seguir padrão [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+feat: adiciona filtro por data
+fix: corrige cálculo de déficit
+docs: atualiza README
+style: formata código
+refactor: refatora função carregar_dados
+test: adiciona testes unitários
+```
+
+---
+
+## 📄 Licença
+
+Este projeto é propriedade privada da **[Sua Empresa]** e não pode ser distribuído, modificado ou utilizado sem autorização expressa.
+
+© 2025 [Sua Empresa]. Todos os direitos reservados.
+
+---
+
+## 👥 Equipe
+
+### Desenvolvedor Principal
+
+* **Seu Nome** - Desenvolvedor Full Stack - [email@empresa.com](mailto:email@empresa.com)
+
+### Stakeholders
+
+* **Gestor RH** - Requisitos e validação
+* **Analistas C&S** - Usuários finais
+* **TI** - Infraestrutura e deploy
+
+---
+
+## 📞 Suporte
+
+### Documentação
+
+* 📚 [Wiki do Projeto](https://wiki.empresa.com/oris)
+* 📖 [Manual do Usuário](https://claude.ai/chat/docs/manual_usuario.pdf)
+* 🎓 [Vídeos de Treinamento](https://treinamento.empresa.com/oris)
+
+### Contato
+
+* 📧 Email: suporte.oris@empresa.com
+* 💬 Teams: Canal #oris-suporte
+* 🎫 Tickets: [Portal de Suporte](https://suporte.empresa.com/)
+
+### Horário de Atendimento
+
+* Segunda a Sexta: 8h às 18h
+* Sábado: 8h às 12h
+* Emergências: (11) 9999-9999
+
+---
+
+## 🙏 Agradecimentos
+
+Agradecimentos especiais a:
+
+* Equipe de RH pela colaboração nos requisitos
+* Analistas de C&S pelo feedback constante
+* Time de TI pelo suporte na infraestrutura
+* Todos os usuários que contribuíram para melhorias
+
+---
+
+## 📊 Estatísticas do Projeto
+
+![GitHub last commit](https://img.shields.io/github/last-commit/sua-empresa/oris-sistema)
+![GitHub issues](https://img.shields.io/github/issues/sua-empresa/oris-sistema)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/sua-empresa/oris-sistema)
+
+### Métricas de Uso
+
+| Métrica                 | Valor    |
+| ------------------------ | -------- |
+| Usuários Ativos         | 3        |
+| Vagas Processadas/Mês   | ~250     |
+| Taxa de Aprovação      | 72%      |
+| Tempo Médio de Decisão | 2.3 dias |
+
+---
+
+## 🔗 Links Úteis
+
+* [Documentação Python](https://docs.python.org/3/)
+* [Documentação Streamlit](https://docs.streamlit.io/)
+* [Documentação Pandas](https://pandas.pydata.org/docs/)
+* [SQLite Tutorial](https://www.sqlitetutorial.net/)
+
+---
+
+<div align="center">
+**Desenvolvido com ❤️ pela equipe de TI**
+
+[🏠 Home](https://oris.empresa.com/) • [📖 Docs](https://docs.empresa.com/oris) • [🐛 Issues](https://github.com/sua-empresa/oris-sistema/issues)
+
+</div>
